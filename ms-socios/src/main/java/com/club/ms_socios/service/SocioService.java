@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service //esta clase es un servicio que maneja lógica
@@ -56,5 +57,57 @@ public class SocioService {
         log.info("Socio registrado exitosamente con ID: {}", socioGuardado.getId());
 
         return socioGuardado;
+    }
+
+    // Endpoint GET: Listar todos los socios
+    public List<Socio> listarTodos() {
+        log.info("Consultando la lista completa de socios");
+        return socioRepository.findAll();
+    }
+
+    // Endpoint GET: Buscar un socio por su ID
+    public Socio buscarPorId(Long id) {
+        log.info("Buscando socio con ID: {}", id);
+        return socioRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error("No se encontró el socio con ID: {}", id);
+                    return new RuntimeException("Socio no encontrado con el ID proporcionado.");
+                });
+    }
+
+    // Endpoint PUT: Actualizar datos de un socio existente
+    public Socio actualizarSocio(Long id, SocioRequestDTO dto) {
+        log.info("Actualizando socio con ID: {}", id);
+
+        // 1. Verificamos si existe antes de intentar actualizar
+        Socio socioExistente = buscarPorId(id);
+
+        // 2. Actualizamos solo los campos permitidos
+        socioExistente.setNombre(dto.getNombre());
+        socioExistente.setRut(dto.getRut());
+        socioExistente.setEmail(dto.getEmail());
+
+        // 3. Guardamos los cambios
+        Socio socioActualizado = socioRepository.save(socioExistente);
+        log.info("Socio con ID: {} actualizado exitosamente", id);
+
+        return socioActualizado;
+    }
+
+    // Endpoint DELETE
+    public Socio desactivarSocio(Long id) {
+        log.info("Desactivando socio con ID: {}", id);
+
+        // 1. Buscamos al socio (si no existe, esto lanza la excepción sola)
+        Socio socio = buscarPorId(id);
+
+        // 2. Cambiamos su estado a inactivo
+        socio.setActivo(false);
+
+        // 3. Guardamos los cambios
+        Socio socioDesactivado = socioRepository.save(socio);
+        log.info("Socio con ID: {} desactivado exitosamente", id);
+
+        return socioDesactivado;
     }
 }
