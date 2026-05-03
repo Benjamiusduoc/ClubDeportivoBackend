@@ -1,5 +1,6 @@
 package com.club.ms_socios.controller;
 
+import com.club.ms_socios.model.dto.EmailUpdateDTO;
 import com.club.ms_socios.model.dto.SocioRequestDTO;
 import com.club.ms_socios.model.entity.Socio;
 import com.club.ms_socios.service.SocioService;
@@ -37,6 +38,25 @@ public class SocioController {
         return new ResponseEntity<>(lista, HttpStatus.OK); // 200 OK
     }
 
+    // Rutas literales antes de /{id} para evitar conflictos de enrutado
+    @GetMapping("/activos")
+    public ResponseEntity<List<Socio>> listarActivos() {
+        List<Socio> lista = socioService.listarActivos();
+        return new ResponseEntity<>(lista, HttpStatus.OK);
+    }
+    // Endpoint Get para contar socios activos 
+    @GetMapping("/estadisticas/activos")
+    public ResponseEntity<Long> contarActivos() {
+        long total = socioService.contarSociosActivos();
+        return new ResponseEntity<>(total, HttpStatus.OK);
+    }
+   // Endpoint Get para buscar un socio por su RUT
+    @GetMapping("/rut/{rut}")
+    public ResponseEntity<Socio> obtenerPorRut(@PathVariable String rut) {
+        Socio socio = socioService.buscarPorRut(rut);
+        return new ResponseEntity<>(socio, HttpStatus.OK);
+    }
+
     // GET por ID: http://localhost:8080/api/socios/1
     @GetMapping("/{id}")
     public ResponseEntity<Socio> obtenerPorId(@PathVariable Long id) {
@@ -49,6 +69,20 @@ public class SocioController {
     public ResponseEntity<Socio> actualizar(@PathVariable Long id, @Valid @RequestBody SocioRequestDTO dto) {
         Socio socioActualizado = socioService.actualizarSocio(id, dto);
         return new ResponseEntity<>(socioActualizado, HttpStatus.OK);
+    }
+
+
+   // Put para reactivar un socio
+    @PutMapping("/{id}/reactivar")
+    public ResponseEntity<Socio> reactivar(@PathVariable Long id) {
+        Socio socio = socioService.reactivarSocio(id);
+        return new ResponseEntity<>(socio, HttpStatus.OK);
+    }
+   // Patch para actualizar el email de un socio
+    @PatchMapping("/{id}/email")
+    public ResponseEntity<Socio> actualizarEmail(@PathVariable Long id, @Valid @RequestBody EmailUpdateDTO dto) {
+        Socio socio = socioService.actualizarEmail(id, dto);
+        return new ResponseEntity<>(socio, HttpStatus.OK);
     }
 
     // DELETE por ID: http://localhost:8080/api/socios/1
