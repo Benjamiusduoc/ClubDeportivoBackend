@@ -1,5 +1,6 @@
 package com.club.ms_socios.service;
 
+import com.club.ms_socios.model.dto.EmailUpdateDTO;
 import com.club.ms_socios.model.dto.SocioRequestDTO;
 import com.club.ms_socios.model.entity.Socio;
 import com.club.ms_socios.repository.SocioRepository;
@@ -109,5 +110,56 @@ public class SocioService {
         log.info("Socio con ID: {} desactivado exitosamente", id);
 
         return socioDesactivado;
+    }
+
+    // Endpoint Get para buscar un socio por su RUT
+
+    public Socio buscarPorRut(String rut) {
+        log.info("Buscando socio con RUT: {}", rut);
+        return socioRepository.findByRut(rut)
+                .orElseThrow(() -> {
+                    log.error("No se encontró el socio con RUT: {}", rut);
+                    return new RuntimeException("Socio no encontrado con el RUT proporcionado.");
+                });
+    }
+
+    //Endpoint Put para reactivar un socio
+    public Socio reactivarSocio(Long id) {
+        log.info("Reactivando socio con ID: {}", id);
+        Socio socio = buscarPorId(id);
+        socio.setActivo(true);
+        Socio guardado = socioRepository.save(socio);
+        log.info("Socio con ID: {} reactivado exitosamente", id);
+        return guardado;
+    }
+
+    //Endpoint para listar socios activos
+    public List<Socio> listarActivos() {
+        log.info("Consultando socios con estado activo");
+        return socioRepository.findByActivoTrue();
+    }
+
+    //Endpoint para actualizar el email de un socio
+    public Socio actualizarEmail(Long id, EmailUpdateDTO dto) {
+        log.info("Actualizando email del socio con ID: {}", id);
+        Socio socio = buscarPorId(id);
+
+        socioRepository.findByEmail(dto.getEmail()).ifPresent(otro -> {
+            if (!otro.getId().equals(id)) {
+                log.error("Validación fallida: el correo {} ya pertenece a otro socio", dto.getEmail());
+                throw new RuntimeException("El correo ingresado ya pertenece a un socio existente.");
+            }
+        });
+
+        socio.setEmail(dto.getEmail());
+        Socio actualizado = socioRepository.save(socio);
+        log.info("Email del socio con ID: {} actualizado exitosamente", id);
+        return actualizado;
+    }
+
+    //Endpoint para contar socios activos
+    public long contarSociosActivos() {
+        log.info("Contando socios con estado activo");
+        return socioRepository.countByActivoTrue();
     }
 }
